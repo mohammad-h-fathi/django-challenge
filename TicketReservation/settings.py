@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/3.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
-
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -20,12 +20,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-3#jwby(-bx@8@8muc6nnq)&6oo3x#a(a+st41-8ebrpt@^4*4o'
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = bool(os.getenv('DEBUG'))
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [host for host in os.getenv('ALLOWED_HOSTS').replace('"', '').replace("'", '').split(',')]
 
 
 # Application definition
@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'tickets.apps.TicketsConfig',
     'users.apps.UsersConfig',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
@@ -47,21 +48,62 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'TicketReservation.middleware.auth_middleware'
 ]
 
 WSGI_APPLICATION = 'TicketReservation.wsgi.application'
 
 
+AUTH_USER_MODEL = 'users.User'
+ROOT_URLCONF = 'TicketReservation.urls'
+
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+    'default': {},
+
+    'users': {
+        'NAME': 'newsbox_users',
+        'USER': 'root',
+        'PASSWORD': '1',
+        'ENGINE': 'django.db.backends.mysql'
+    },
+
+    'tickets': {
+        'NAME': 'newsbox_tickets',
+        'USER': 'root',
+        'PASSWORD': '1',
+        'ENGINE': 'django.db.backends.mysql'
     }
 }
 
+DATABASE_ROUTERS = ['tickets.db_router.TicketsDBRouter', 'users.db_router.UsersDBRouter']
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.memcached.PyMemcacheCache',
+        'LOCATION': '127.0.0.1:11211',
+    }
+}
+
+
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [os.path.join(BASE_DIR, 'templates')]
+        ,
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        },
+    },
+]
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
@@ -80,6 +122,12 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+#
+REST_FRAMEWORK = {
+    'DEFAULT_RENDERER_CLASSES': (
+        'users.renderers.ApiRenderer',
+    ),
+}
 
 
 # Internationalization
