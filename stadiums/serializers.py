@@ -5,18 +5,43 @@ from .models import Stadium, StadiumSeats
 
 
 class StadiumSerializer(serializers.ModelSerializer):
+    """
+        The serializer class for Stadium
+    """
     class Meta:
         model = Stadium
         fields = '__all__'
 
 
 class StadiumSeatSerializer(serializers.ModelSerializer):
+    """
+        The serializer class for Stadium Seats
+    """
     class Meta:
         model = StadiumSeats
         fields = '__all__'
 
 
+"""
+    The following classes are experimental, and need to be improved later,
+    they create a set of seats for stadium, yet for one side of stadium
+"""
+
+
 class SeatsGroupSerializer(serializers.Serializer):
+    """
+        Create a set of seats, for a range of x coordinates -- Stadium center is (0,0) --
+        :param: x_range is for the range of seats, lets say [-50, 50] for a 100 meters stadium,
+        :param: y_range is for the starting of placing seats on y position
+        :param: x_angle the distance between seats in x coordinates, for example, if x_angle=1 for prev,
+            the stadium will have 100 seats per row in top side
+        :param: y_angle the distance between seats in y coordinates
+        :param: starting_row is the number of starting row for each column
+        :param: starting_column, is the column to start based on y_range
+        :param: ending_column, is the column to end based on y_range and y_angle
+        :param: starting_number, is the starting number of seat rows
+        :param: stadium, the stadium seats are related to
+    """
     x_range = serializers.ListField(child=serializers.FloatField(),
                                     validators=[MaxLengthValidator(2), MinLengthValidator(2)])
     y_range = serializers.ListField(child=serializers.FloatField(),
@@ -92,6 +117,16 @@ class SeatsGroupSerializer(serializers.Serializer):
 
 
 class SeatsColumnOnlySerializer(serializers.Serializer):
+    """
+        Create a set of seats, for a specific column
+        :param: x_coordinate is for coordinate for x position of the seat
+        :param: y_coordinate is for coordinate for y position of the first seat
+        :param: y_angle the distance between seats in y coordinates
+        :param: starting_column, is the column to start based on y_range
+        :param: ending_column, is the column to end based on y_range and y_angle
+        :param: seat_no, is the number of the seat for each column (seats at same column usually share same number)
+        :param: stadium, the stadium seats are related to
+    """
     x_coordinate = serializers.FloatField()
     y_coordinate = serializers.FloatField()
     y_angle = serializers.FloatField(validators=[MinValueValidator(0)])
@@ -136,6 +171,19 @@ class SeatsColumnOnlySerializer(serializers.Serializer):
 
 
 class SeatsRowOnlySerializer(serializers.Serializer):
+    """
+        Create a set of seats, for a specific row
+        :param: x_coordinate is for coordinate for x position of the first seat
+        :param: y_coordinate is for coordinate for y position of the seat
+        :param: x_angle the distance between seats in x coordinates
+        :param: y_angle the distance between seats in y coordinates
+        :param: starting_row, is the row to start based on x_range
+        :param: ending_row, is the row to end based on x_range and x_angle
+        :param: column, is the column that seats will reside in
+        :param: starting_number, is the starting number of seat rows
+        :param: stadium, the stadium seats are related to
+    """
+
     x_coordinate = serializers.FloatField()
     y_coordinate = serializers.FloatField()
     x_angle = serializers.FloatField(validators=[MinValueValidator(0)])

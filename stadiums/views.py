@@ -9,6 +9,9 @@ from .serializers import *
 
 
 class StadiumsViewSet(viewsets.ModelViewSet):
+    """
+        The ModelViewSet class for stadiums
+    """
     serializer_class = StadiumSerializer
 
     def get_permissions(self):
@@ -27,6 +30,10 @@ class StadiumsViewSet(viewsets.ModelViewSet):
 
 
 class StadiumSeatsView(viewsets.ViewSet):
+    """
+        The ViewSet class, for stadium seats
+        it handles them based on request
+    """
 
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
@@ -46,6 +53,11 @@ class StadiumSeatsView(viewsets.ViewSet):
         return paginated_resp
 
     def create(self, request, stadium):
+        """
+        :param request:
+        :param stadium: the stadium id
+        :return:
+        """
         stadium = get_object_or_404(Stadium, id=stadium)
         data = request.data
         if data.get('solo', None):
