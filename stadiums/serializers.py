@@ -17,8 +17,10 @@ class StadiumSeatSerializer(serializers.ModelSerializer):
 
 
 class SeatsGroupSerializer(serializers.Serializer):
-    x_range = serializers.ListField(validators=[MaxLengthValidator(2), MinLengthValidator(2)])
-    y_range = serializers.ListField(validators=[MaxLengthValidator(2), MinLengthValidator(2)])
+    x_range = serializers.ListField(child=serializers.FloatField(),
+                                    validators=[MaxLengthValidator(2), MinLengthValidator(2)])
+    y_range = serializers.ListField(child=serializers.FloatField(),
+                                    validators=[MaxLengthValidator(2), MinLengthValidator(2)])
     x_angle = serializers.FloatField(validators=[MinValueValidator(0)])
     y_angle = serializers.FloatField(validators=[MinValueValidator(0)])
     starting_row = serializers.IntegerField(validators=[MinValueValidator(1)])
