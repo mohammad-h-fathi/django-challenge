@@ -14,6 +14,7 @@ from .serializers import *
 class UserRegistryView(generics.CreateAPIView):
     serializer_class = UserRegisterSerializer
     permission_classes = [permissions.AllowAny]
+    authentication_classes = []
 
     def create(self, request, *args, **kwargs):
         ser = self.get_serializer(data=request.data)
@@ -25,12 +26,14 @@ class UserRegistryView(generics.CreateAPIView):
 
 
 class UserLoginView(views.APIView):
+    permission_classes = [permissions.AllowAny]
+    authentication_classes = []
 
     def post(self, request):
         if request.user.is_authenticated:
             return Response(
                 {
-                    'data': UserInfoSerializer(self.request.user),
+                    'data': UserInfoSerializer(self.request.user).data,
                     'status': 200,
                     'message': {
                         'general': 'You are already logged in'
