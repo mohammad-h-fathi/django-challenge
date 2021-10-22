@@ -15,7 +15,6 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
@@ -23,10 +22,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = bool(os.getenv('DEBUG'))
-
+DEBUG = bool(os.getenv('DEBUG') or False)
 ALLOWED_HOSTS = [host for host in os.getenv('ALLOWED_HOSTS').replace('"', '').replace("'", '').split(',')]
-
 
 # Application definition
 
@@ -36,23 +33,22 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.staticfiles',
     'tickets.apps.TicketsConfig',
     'users.apps.UsersConfig',
+    'stadiums.apps.StadiumsConfig',
+    'matches.apps.MatchesConfig',
     'rest_framework',
+    'django_filters',
 ]
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'TicketReservation.middleware.auth_middleware'
 ]
 
 WSGI_APPLICATION = 'TicketReservation.wsgi.application'
-
 
 AUTH_USER_MODEL = 'users.User'
 ROOT_URLCONF = 'TicketReservation.urls'
@@ -67,18 +63,40 @@ DATABASES = {
         'NAME': 'newsbox_users',
         'USER': 'root',
         'PASSWORD': '1',
-        'ENGINE': 'django.db.backends.mysql'
+        'ENGINE': 'django.db.backends.mysql',
+        'HOST': '192.168.1.105',
+        'PORT': 3306
     },
 
     'tickets': {
         'NAME': 'newsbox_tickets',
         'USER': 'root',
         'PASSWORD': '1',
-        'ENGINE': 'django.db.backends.mysql'
-    }
+        'ENGINE': 'django.db.backends.mysql',
+        'HOST': '192.168.1.105',
+        'PORT': 3306
+    },
+    'matches': {
+        'NAME': 'newsbox_matches',
+        'USER': 'root',
+        'PASSWORD': '1',
+        'ENGINE': 'django.db.backends.mysql',
+        'HOST': '192.168.1.105',
+        'PORT': 3306
+    },
+    'stadiums': {
+        'NAME': 'newsbox_stadiums',
+        'USER': 'root',
+        'PASSWORD': '1',
+        'ENGINE': 'django.db.backends.mysql',
+        'HOST': '192.168.1.105',
+        'PORT': 3306
+    },
+
 }
 
-DATABASE_ROUTERS = ['tickets.db_router.TicketsDBRouter', 'users.db_router.UsersDBRouter']
+DATABASE_ROUTERS = ['tickets.db_router.TicketsDBRouter', 'users.db_router.UsersDBRouter',
+                    'stadiums.db_router.StadiumsDBRouter', 'matches.db_router.MatchesDBRouter']
 
 CACHES = {
     'default': {
@@ -86,7 +104,6 @@ CACHES = {
         'LOCATION': '127.0.0.1:11211',
     }
 }
-
 
 TEMPLATES = [
     {
@@ -127,15 +144,24 @@ REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': (
         'users.renderers.ApiRenderer',
     ),
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 50,
+    'DEFAULT_FILTER_BACKENDS': (
+        'django_filters.rest_framework.DjangoFilterBackend',
+    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'TicketReservation.middleware.MyTokenAuthentication',
+    ]
 }
 
+MATCH_DIFFERENCE_TIME = int(os.getenv('MATCH_DIFFERENCE_TIME'))
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Tehran'
 
 USE_I18N = True
 
@@ -143,11 +169,11 @@ USE_L10N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field

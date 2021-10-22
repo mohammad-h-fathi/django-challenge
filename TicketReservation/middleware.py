@@ -8,7 +8,8 @@ from types import SimpleNamespace
 
 from django.contrib.auth.models import Permission, Group
 from django.http import JsonResponse
-from rest_framework import status
+from rest_framework import status, exceptions
+from rest_framework.authentication import BaseAuthentication, get_authorization_header
 from rest_framework.response import Response
 
 from users.models import User
@@ -18,7 +19,7 @@ from .aes import AES
 AES_KEY = bytes(os.getenv('AES_KEY').encode('utf-8'))
 AES_IV = bytes(os.getenv('AES_IV').encode('utf-8'))
 TOKEN_TTL = int(os.getenv('TOKEN_TTL'))
-JWT_KEY = os.getenv('JWT_KEY').replace('\\n', '\n').strip().replace('"', '')
+JWT_KEY = os.getenv('JWT_KEY')
 JWT_ALGORITHM = os.getenv('JWT_ALGORITHM')
 
 
@@ -53,31 +54,36 @@ def decode_token(auth):
     return None
 
 
-def auth_middleware(get_response):
-    def middleware(request):
-        auth = request.headers.get('Authorization', None)
-        if auth:
-            try:
-                user_data = decode_token(auth)
-            except jwt.exceptions.InvalidSignatureError:
-                return JsonResponse({'data': None,
-                                     'status': 401,
-                                     'message': "Invalid Signature Error"}
-                                    , status=status.HTTP_401_UNAUTHORIZED)
-            except jwt.exceptions.ExpiredSignatureError:
-                return JsonResponse({
-                    'data': None,
-                    'status': 401,
-                    'message': 'Signature is Expired'},
-                    status=status.HTTP_401_UNAUTHORIZED)
-            except Exception as e:
-                print(e)
-                return JsonResponse({'data': None,
-                                     'status': 401,
-                                     'message': 'Invalid Token'},
-                                    status=status.HTTP_401_UNAUTHORIZED)
-            request.user = user_data
-        response = get_response(request)
-        return response
+class MyTokenAuthentication(BaseAuthentication):
+    keyword = "Bearer"
 
-    return middleware
+    def enforce_csrf(self, request):
+        return
+
+    def authenticate(self, request):
+        auth = get_authorization_header(request).split()
+        if not auth or auth[0].lower() != self.keyword.lower().encode():
+            return None
+
+        if len(auth) == 1:
+            msg = 'Invalid token header. No credentials provided.'
+            raise exceptions.AuthenticationFailed(msg)
+        elif len(auth) > 2:
+            msg = 'Invalid token header. Token string should not contain spaces.'
+            raise exceptions.AuthenticationFailed(msg)
+
+        try:
+            token = auth[1].decode()
+        except UnicodeError:
+            msg = 'Invalid token header. Token string should not contain invalid characters.'
+            raise exceptions.AuthenticationFailed(msg)
+        try:
+            user_data = decode_token(token)
+            return (user_data, None)
+        except jwt.exceptions.InvalidSignatureError:
+            msg = "Invalid Signature Error"
+        except jwt.exceptions.ExpiredSignatureError:
+            msg = 'Signature is Expired'
+        except Exception as e:
+            msg = 'Invalid Token'
+        raise exceptions.AuthenticationFailed(msg)
