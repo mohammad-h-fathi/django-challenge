@@ -1,14 +1,15 @@
 version: "3.3"
 
 services:
-  migrations:
+  app:
     image: ticket_reservation
     env_file:
       - .env
     volumes:
       - .:/home/app/web/
-    command: sh /home/app/web/entrypoint.sh
     restart: always
+    ports:
+     - "8000:8000"
     environment:
       DB_USERS_HOST: db_users
       DB_STADIUMS_HOST: db_stadiums
@@ -19,33 +20,43 @@ services:
       - db_users
       - db_matches
       - db_tickets
+    links:
+      - db_stadiums
+      - db_users
+      - db_matches
+      - db_tickets
   db_users:
     image: mysql:latest
     volumes:
+      - ./db-users:/docker-entrypoint-initdb.d
       - /var/data/db-users:/var/lib/mysql
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_USERS_PASSWORD}
       MYSQL_DATABASE: ${DB_USERS_DB_NAME}
       MYSQL_USER: ${DB_USERS_USER}
+      MYSQL_PORT: 3306
       MYSQL_PASSWORD: ${DB_USERS_PASSWORD}
     ports:
       - "33061:3306"
   db_stadiums:
     image: mysql:latest
     volumes:
+      - ./db-stadiums:/docker-entrypoint-initdb.d
       - /var/data/db-stadiums:/var/lib/mysql
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_STADIUMS_PASSWORD}
       MYSQL_DATABASE: ${DB_STADIUMS_DB_NAME}
       MYSQL_USER: ${DB_STADIUMS_USER}
+      MYSQL_PORT: 3306
       MYSQL_PASSWORD: ${DB_STADIUMS_PASSWORD}
     ports:
       - "33062:3306"
   db_matches:
     image: mysql:latest
     volumes:
+      - ./db-matches:/docker-entrypoint-initdb.d
       - /var/data/db-matches:/var/lib/mysql
     restart: always
     environment:
@@ -53,11 +64,13 @@ services:
       MYSQL_DATABASE: ${DB_MATCHES_DB_NAME}
       MYSQL_USER: ${DB_MATCHES_USER}
       MYSQL_PASSWORD: ${DB_MATCHES_PASSWORD}
+      MYSQL_PORT: 3306
     ports:
       - "33063:3306"
   db_tickets:
     image: mysql:latest
     volumes:
+      - ./db-tickets:/docker-entrypoint-initdb.d
       - /var/data/db-tickets:/var/lib/mysql
     restart: always
     environment:
@@ -65,6 +78,7 @@ services:
       MYSQL_DATABASE: ${DB_TICKETS_DB_NAME}
       MYSQL_USER: ${DB_TICKETS_USER}
       MYSQL_PASSWORD: ${DB_TICKETS_PASSWORD}
+      MYSQL_PORT: 3306
     ports:
       - "33064:3306"
 
