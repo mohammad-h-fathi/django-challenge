@@ -3,3 +3,7 @@
 .gitignore
 README.md
 Dockerfile
+db-matches
+db-stadiums
+db-tickets
+db-users
