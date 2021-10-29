@@ -52,5 +52,5 @@ RUN chmod +x entrypoint.sh
 # change to the app user
 USER app
 EXPOSE 8000
-CMD ["python", "manage.py", "collectstatic", "-noinput"]
+CMD ["python", "manage.py", "collectstatic", "--noinput"]
 CMD ["gunicorn", "TicketReservation.wsgi", "--bind", "0.0.0.0:8000", "--workers", "2"]
