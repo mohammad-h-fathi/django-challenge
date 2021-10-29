@@ -1,0 +1,92 @@
+version: "3.3"
+
+services:
+  migrations:
+    image: ticket_reservation
+    env_file:
+      - .env
+    volumes:
+      - .:/home/app/web/
+    command: sh /home/app/web/entrypoint.sh
+    restart: always
+    environment:
+      DB_USERS_HOST: db_users
+      DB_STADIUMS_HOST: db_stadiums
+      DB_MATCHES_HOST: db_matches
+      DB_TICKETS_HOST: db_tickets
+    depends_on:
+      - db_stadiums
+      - db_users
+      - db_matches
+      - db_tickets
+  db_users:
+    image: mysql:latest
+    volumes:
+      - /var/data/db-users:/var/lib/mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_USERS_PASSWORD}
+      MYSQL_DATABASE: ${DB_USERS_DB_NAME}
+      MYSQL_USER: ${DB_USERS_USER}
+      MYSQL_PASSWORD: ${DB_USERS_PASSWORD}
+    ports:
+      - "33061:3306"
+  db_stadiums:
+    image: mysql:latest
+    volumes:
+      - /var/data/db-stadiums:/var/lib/mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_STADIUMS_PASSWORD}
+      MYSQL_DATABASE: ${DB_STADIUMS_DB_NAME}
+      MYSQL_USER: ${DB_STADIUMS_USER}
+      MYSQL_PASSWORD: ${DB_STADIUMS_PASSWORD}
+    ports:
+      - "33062:3306"
+  db_matches:
+    image: mysql:latest
+    volumes:
+      - /var/data/db-matches:/var/lib/mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_MATCHES_PASSWORD}
+      MYSQL_DATABASE: ${DB_MATCHES_DB_NAME}
+      MYSQL_USER: ${DB_MATCHES_USER}
+      MYSQL_PASSWORD: ${DB_MATCHES_PASSWORD}
+    ports:
+      - "33063:3306"
+  db_tickets:
+    image: mysql:latest
+    volumes:
+      - /var/data/db-tickets:/var/lib/mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_TICKETS_PASSWORD}
+      MYSQL_DATABASE: ${DB_TICKETS_DB_NAME}
+      MYSQL_USER: ${DB_TICKETS_USER}
+      MYSQL_PASSWORD: ${DB_TICKETS_PASSWORD}
+    ports:
+      - "33064:3306"
+
+#  app:
+#    image: ticket_reservation
+#    volumes:
+#      - "/etc/timezone:/etc/timezone:ro"
+#      - "/etc/localtime:/etc/localtime:ro"
+#    env_file:
+#      - .env
+#    environment:
+#      DB_USERS_HOST: db_users
+#      DB_STADIUMS_HOST: db_stadiums
+#      DB_MATCHES_HOST: db_matches
+#      DB_TICKETS_HOST: db_tickets
+#    ports:
+#      - "8000:8000"
+#    entrypoint: ./entrypoint.sh
+#    restart: always
+#    depends_on:
+##      - db_tickets
+##      - db_matches
+##      - db_users
+##      - db_stadiums
+#      - migrations

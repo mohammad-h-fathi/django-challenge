@@ -23,7 +23,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = bool(os.getenv('DEBUG') or False)
-ALLOWED_HOSTS = [host for host in os.getenv('ALLOWED_HOSTS').replace('"', '').replace("'", '').split(',')]
+ALLOWED_HOSTS = [host for host in (os.getenv('ALLOWED_HOSTS') or '*').replace('"', '').replace("'", '').split(',')]
 
 # Application definition
 
@@ -60,37 +60,39 @@ DATABASES = {
     'default': {},
 
     'users': {
-        'NAME': 'newsbox_users',
-        'USER': 'root',
-        'PASSWORD': '1',
+        'NAME': os.getenv('DB_USERS_DB_NAME'),
+        'USER': os.getenv('DB_USERS_USER'),
+        'PASSWORD': os.getenv('DB_USERS_PASSWORD'),
         'ENGINE': 'django.db.backends.mysql',
-        'HOST': '192.168.1.105',
-        'PORT': 3306
+        'HOST': os.getenv('DB_USERS_HOST'),
+        'PORT': int(os.getenv('DB_USERS_PORT') or 33061)
+    },
+
+    'stadiums': {
+        'NAME': os.getenv('DB_STADIUMS_DB_NAME'),
+        'USER': os.getenv('DB_STADIUMS_USER'),
+        'PASSWORD': os.getenv('DB_STADIUMS_PASSWORD'),
+        'ENGINE': 'django.db.backends.mysql',
+        'HOST': os.getenv('DB_STADIUMS_HOST'),
+        'PORT': int(os.getenv('DB_STADIUMS_PORT') or 33062)
+    },
+
+    'matches': {
+        'NAME': os.getenv('DB_MATCHES_DB_NAME'),
+        'USER': os.getenv('DB_MATCHES_USER'),
+        'PASSWORD': os.getenv('DB_MATCHES_DB_NAME'),
+        'ENGINE': 'django.db.backends.mysql',
+        'HOST': os.getenv('DB_MATCHES_HOST'),
+        'PORT': int(os.getenv('DB_MATCHES_PORT') or 33063)
     },
 
     'tickets': {
-        'NAME': 'newsbox_tickets',
-        'USER': 'root',
-        'PASSWORD': '1',
+        'NAME': os.getenv('DB_TICKETS_DB_NAME'),
+        'USER': os.getenv('DB_TICKETS_USER'),
+        'PASSWORD': os.getenv('DB_TICKETS_PASSWORD'),
         'ENGINE': 'django.db.backends.mysql',
-        'HOST': '192.168.1.105',
-        'PORT': 3306
-    },
-    'matches': {
-        'NAME': 'newsbox_matches',
-        'USER': 'root',
-        'PASSWORD': '1',
-        'ENGINE': 'django.db.backends.mysql',
-        'HOST': '192.168.1.105',
-        'PORT': 3306
-    },
-    'stadiums': {
-        'NAME': 'newsbox_stadiums',
-        'USER': 'root',
-        'PASSWORD': '1',
-        'ENGINE': 'django.db.backends.mysql',
-        'HOST': '192.168.1.105',
-        'PORT': 3306
+        'HOST': os.getenv('DB_TICKETS_HOST'),
+        'PORT': int(os.getenv('DB_TICKETS_PORT') or 33064)
     },
 
 }
@@ -154,7 +156,8 @@ REST_FRAMEWORK = {
     ]
 }
 
-MATCH_DIFFERENCE_TIME = int(os.getenv('MATCH_DIFFERENCE_TIME'))
+# TIME BETWEEN TWO MATCHES IN HOURS
+MATCH_DIFFERENCE_TIME = int(os.getenv('MATCH_DIFFERENCE_TIME') or 3)
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/

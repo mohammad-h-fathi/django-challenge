@@ -72,7 +72,7 @@ class TicketsView(views.APIView):
 
     def get(self, request, ticket_id=None):
         if ticket_id:
-            instance = get_object_or_404(Ticket, id=ticket_id, user=self.request.user.id)
+            instance = get_object_or_404(Ticket, id=int(ticket_id), user=self.request.user.id)
             return Response(TicketListSerializer(instance).data)
         else:
             return self.get_filtered_response()
